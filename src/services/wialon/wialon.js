@@ -82,26 +82,20 @@ const WialonService = (() => {
     });
   }
 
-  async function loadGroupsWithUnits(  ) {
+  async function loadGroupsWithUnits(groups_filter = []) {
     return new Promise((resolve, reject) => {
       const session = wialon.core.Session.getInstance();
-      
-      // const unitFlags =
-      //   wialon.item.Item.dataFlag.base |
-      //   wialon.item.Unit.dataFlag.lastMessage |
-      //   wialon.item.Item.dataFlag.adminFields |
-      //   wialon.item.Unit.dataFlag.customFields;
-      
+
       const unitFlags =
-      wialon.item.Item.dataFlag.base |
-      wialon.item.Item.dataFlag.customFields |
-      wialon.item.Item.dataFlag.adminFields |
-      wialon.item.Unit.dataFlag.lastMessage;
-      
+        wialon.item.Item.dataFlag.base |
+        wialon.item.Item.dataFlag.customFields |
+        wialon.item.Item.dataFlag.adminFields |
+        wialon.item.Unit.dataFlag.lastMessage;
+
       session.loadLibrary("itemCustomFields");
 
       const groupFlags =
-        wialon.item.Item.dataFlag.base ;
+        wialon.item.Item.dataFlag.base;
 
       session.updateDataFlags(
         [
@@ -112,31 +106,34 @@ const WialonService = (() => {
           if (code) return reject(code);
 
           const groups = session.getItems("avl_unit_group") || [];
-          
-          const result = groups.map((group) => {
-            const units = group.getUnits() || [];
-            
-            const parsedUnits = units.map(( _u ) => {
-              const u = session.getItem( _u );
-              const p = u.getPosition();
-              const flds = u.getCustomFields();
+
+          const result = groups
+            .filter(group => group.getName().includes(groups_filter))
+            .map(group => {
+              const units = group.getUnits() || [];
+
+              const parsedUnits = units.map((_u) => {
+                const u = session.getItem(_u);
+                const p = u.getPosition();
+                const flds = u.getCustomFields();
+
+                return {
+                  id: u.getId(),
+                  name: u.getName(),
+                  lat: p?.y,
+                  lon: p?.x,
+                  speed: p?.s,
+                  fields_customers: flds,
+                };
+              });
 
               return {
-                id: u.getId(),
-                name: u.getName(),
-                lat: p?.y,
-                lon: p?.x,
-                speed: p?.s,
-                fields_customers: flds,
+                group_id: group.getId(),
+                group_name: group.getName(),
+                units: parsedUnits,
               };
             });
 
-            return {
-              group_id: group.getId(),
-              group_name: group.getName(),
-              units: parsedUnits,
-            };
-          });
 
           resolve(result);
         }
