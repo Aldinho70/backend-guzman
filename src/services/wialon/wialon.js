@@ -108,7 +108,9 @@ const WialonService = (() => {
           const groups = session.getItems("avl_unit_group") || [];
 
           const result = groups
-            .filter(group => group.getName().includes(groups_filter))
+            .filter(group =>
+              groups_filter.some(f => group.getName().includes(f))
+            )
             .map(group => {
               const units = group.getUnits() || [];
 
@@ -133,6 +135,7 @@ const WialonService = (() => {
                 units: parsedUnits,
               };
             });
+
 
 
           resolve(result);
