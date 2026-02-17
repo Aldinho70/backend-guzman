@@ -1,3 +1,4 @@
+import { fileMap } from "../../config/guzman.config.js";
 import { formatTimestamp } from "../../utils/utils.js";
 import { extractCustomFields, extractSens, getConnectionStatus, mapStateGroups } from "../wialon/utils/wialon.utils.js";
 
@@ -58,108 +59,33 @@ const mapGuzmanTractos = (data) => {
         status[key_status].push(_u);
     });
 
-    const res = mapStateGroups(status)
-    console.log(res);
-
-    sendJsonTractos( res )
+    sendJson( mapStateGroups(status) )
 
 }
 
-const sendJsonTractos = async ( data ) => {
-    let result
-    for (const key in data) {
-        if (!Object.hasOwn(data, key)) continue;
-        
-        const groups = data[key];
-        // console.log(key);
-        // console.log(groups);
+const sendJson = async (data) => {
 
-        switch( key ){
-            case 'vacio':
-                for (const key in groups) {
-                    if (!Object.hasOwn(groups, key)) continue;
-                    const group = groups[key];
-                    switch( key ){
-                        case 'detenidos':
-                                result = await JsonInterceptor.sendJson("json_arrvaciosdet.json", []);
-                                console.log(result);[]
-                            break;
-                        case 'general':
-                                result = await JsonInterceptor.sendJson("json_arrvacios.json", []);
-                                console.log(result);[]
-                            break;
-                        case 'movimiento':
-                                result = await JsonInterceptor.sendJson("json_arrvaciosmov.json", []);
-                                console.log(result);[]
-                            break;
-                    }
-                }
-                break;
+  for (const statusKey in data) {
+    if (!Object.hasOwn(data, statusKey)) continue;
 
-            case 'cargado':
-                for (const key in groups) {
-                    if (!Object.hasOwn(groups, key)) continue;
-                    const group = groups[key];
-                    switch( key ){
-                        case 'detenidos':
-                                result = await JsonInterceptor.sendJson("json_arrcargadosdet.json", []);
-                                console.log(result);[]
-                            break;
-                        case 'general':
-                                result = await JsonInterceptor.sendJson("json_arrcargados.json", []);
-                                console.log(result);[]
-                            break;
-                        case 'movimiento':
-                                result = await JsonInterceptor.sendJson("json_arrcargadosmov.json", []);
-                                console.log(result);[]
-                            break;
-                        case 'sin_reportar':
-                                result = await JsonInterceptor.sendJson("json_arrcargadosdead.json", []);
-                                console.log(result);[]
-                            break;
-                    }
-                }
-                break;
-            case 'espera_de_carga':
-                for (const key in groups) {
-                    if (!Object.hasOwn(groups, key)) continue;
-                    const group = groups[key];
-                    switch( key ){
-                        case 'general':
-                            result = await JsonInterceptor.sendJson("json_arrcargando.json", []);
-                            console.log(result);[]
-                        break;
-                    }
-                }
-                break;
-            case 'espera_descarga':
-                for (const key in groups) {
-                    if (!Object.hasOwn(groups, key)) continue;
-                    const group = groups[key];
-                    switch( key ){
-                        case 'general':
-                            result = await JsonInterceptor.sendJson("json_arrdescargando.json", []);
-                            console.log(result);[]
-                        break;
-                    }
-                }
-                break;
-            case 'sin_estatus':
-                for (const key in groups) {
-                    if (!Object.hasOwn(groups, key)) continue;
-                    const group = groups[key];
-                    switch( key ){
-                        case 'general':
-                            result = await JsonInterceptor.sendJson("json_arrsinstatus.json", []);
-                            console.log(result);[]
-                        break;
-                    }
-                }
-                break;
-        }
-        
-        // const result = await JsonInterceptor.sendJson("unidades.json", data);
-        // console.log(result);
-        
+    const groups = data[statusKey];
+    const statusConfig = fileMap[statusKey];
+
+    if (!statusConfig) continue;
+
+    for (const groupKey in groups) {
+      if (!Object.hasOwn(groups, groupKey)) continue;
+
+      const filename = statusConfig[groupKey];
+      if (!filename) continue;
+
+      const result = await JsonInterceptor.sendJson(
+        filename,
+        // groups[groupKey] // aquí sí enviamos la data real
+        [] // aquí sí enviamos la data real
+      );
+
+      console.table(result);
     }
-}
+  }
+};
