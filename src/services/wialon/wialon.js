@@ -88,10 +88,12 @@ const WialonService = (() => {
 
       const unitFlags =
         wialon.item.Item.dataFlag.base |
-        wialon.item.Item.dataFlag.customFields |
+        wialon.item.Unit.dataFlag.sensors |
         wialon.item.Item.dataFlag.adminFields |
+        wialon.item.Item.dataFlag.customFields |
         wialon.item.Unit.dataFlag.lastMessage;
 
+      session.loadLibrary("unitSensors");
       session.loadLibrary("itemCustomFields");
 
       const groupFlags =
@@ -117,15 +119,23 @@ const WialonService = (() => {
               const parsedUnits = units.map((_u) => {
                 const u = session.getItem(_u);
                 const p = u.getPosition();
+                const sens = u.getSensors();
                 const flds = u.getCustomFields();
+                const lastMessage = u.getLastMessage();
 
                 return {
                   id: u.getId(),
                   name: u.getName(),
-                  lat: p?.y,
-                  lon: p?.x,
+                  Unidad: u.getName(),
+                  Latitud: p?.y,
+                  Longitud: p?.x,
                   speed: p?.s,
+                  Velocidad: p?.s,
+                  Voltaje: 0,
+                  Online: 0,
                   fields_customers: flds,
+                  sens,
+                  lastMessage,
                 };
               });
 
@@ -144,10 +154,24 @@ const WialonService = (() => {
     });
   }
 
+  function getValueSensor(unit_id, sen_id) {
+
+    const unit = session.getItem(unit_id);
+    const sens = unit.getSensor(sen_id);
+
+    let result = unit.calculateSensorValue(sens, unit.getLastMessage());
+
+    if (result == -348201.3876) {
+      result = "N/A";
+    }
+    return result
+  }
+
   return {
     login,
     logout,
     loadUnits,
     loadGroupsWithUnits,
+    getValueSensor,
   };
 })();

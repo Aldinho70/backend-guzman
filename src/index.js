@@ -7,8 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await WialonService.login( TOKEN_WIALON );
     
     const groups_with_units = await WialonService.loadGroupsWithUnits( GROUP_FILTER );
-    
-    
+
     mapGuzman( groups_with_units )
 
   } catch (err) {

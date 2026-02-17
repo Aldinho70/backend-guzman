@@ -4,7 +4,7 @@ La operacion de guzman se basa en estos apartados:
     ----------------------------------------------------------------------------------
     Unidad
         -> Cargadas
-            -> Unidades cargadas (Resumen general de todas las unidades)
+            -> Unidades cargadas ( Resumen general de todas las unidades )
             -> Unidades cargadas detenidas
             -> Unidades cargadas en movimiento
             -> Unidades cargadas sin reportar
@@ -46,3 +46,19 @@ La operacion de guzman se basa en estos apartados:
 [GUZMAN CAJAS DOBLES]
     -> Cajas dobles
     
+
+
+(
+    [Unidad] => C-013 - I
+    [Origen] => COMITAN
+    [Destino] => 
+    [Ultimo reporte] => 2026-02-17 09:11:03
+    [Latitud] => 19.962858
+    [longitud] => -99.529759
+    [Velocidad] => 0
+    [Voltaje] => 12.674
+    [Online] => 1
+    [Status] => CARGADO
+    [Geocerca] => 
+    [Status ruta] => 
+)
