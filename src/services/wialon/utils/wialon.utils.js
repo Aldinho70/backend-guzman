@@ -51,3 +51,34 @@ export const getConnectionStatus = (ts, toleranceMinutes = 15) => {
 
   return diffMinutes <= toleranceMinutes ? 'online' : 'offline';
 };
+
+export const mapStateGroups = (groups) => {
+    const result = {};
+
+    for (const key in groups) {
+        if (!Object.hasOwn(groups, key)) continue;
+
+        result[key] = {
+            movimiento: [],
+            detenidos: [],
+            sin_reportar: [],
+            general: [],
+        };
+
+        groups[key].forEach(_unit => {
+            result[key].general.push(_unit)
+
+            if (_unit.status_connection === 'online' && _unit.speed > 0) {
+                result[key].movimiento.push(_unit);
+            }
+            else if (_unit.status_connection === 'online') {
+                result[key].detenidos.push(_unit);
+            }
+            else {
+                result[key].sin_reportar.push(_unit);
+            }
+        });
+    }
+
+    return result;
+};

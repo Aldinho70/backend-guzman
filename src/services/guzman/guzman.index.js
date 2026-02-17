@@ -1,5 +1,5 @@
 import { formatTimestamp } from "../../utils/utils.js";
-import { extractCustomFields, extractSens, getConnectionStatus } from "../wialon/utils/wialon.utils.js";
+import { extractCustomFields, extractSens, getConnectionStatus, mapStateGroups } from "../wialon/utils/wialon.utils.js";
 
 export const mapGuzman = (data) => {
     data.forEach(_group => {
@@ -58,47 +58,12 @@ const mapGuzmanTractos = (data) => {
         status[key_status].push(_u);
     });
 
-    // console.log(status);
-
     const res = mapStateGroups(status)
     console.log(res);
 
     sendJsonTractos( res )
-    
 
 }
-
-
-const mapStateGroups = (groups) => {
-    const result = {};
-
-    for (const key in groups) {
-        if (!Object.hasOwn(groups, key)) continue;
-
-        result[key] = {
-            movimiento: [],
-            detenidos: [],
-            sin_reportar: [],
-            general: [],
-        };
-
-        groups[key].forEach(_unit => {
-            result[key].general.push(_unit)
-
-            if (_unit.status_connection === 'online' && _unit.speed > 0) {
-                result[key].movimiento.push(_unit);
-            }
-            else if (_unit.status_connection === 'online') {
-                result[key].detenidos.push(_unit);
-            }
-            else {
-                result[key].sin_reportar.push(_unit);
-            }
-        });
-    }
-
-    return result;
-};
 
 const sendJsonTractos = async ( data ) => {
     let result
@@ -185,7 +150,7 @@ const sendJsonTractos = async ( data ) => {
                     const group = groups[key];
                     switch( key ){
                         case 'general':
-                            result = await JsonInterceptor.sendJson("json_arrsinstatus.json", group);
+                            result = await JsonInterceptor.sendJson("json_arrsinstatus.json", []);
                             console.log(result);[]
                         break;
                     }
