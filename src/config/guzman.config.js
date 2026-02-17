@@ -30,4 +30,13 @@ export const fileMap = {
   cajas_sin_reportar: {
     general: "json_arrcajas.json"
   },
+  cajas_dobles_sin_reportar: {
+    general: "json_arrdoblessinreportar.json"
+  },
+  tractos_sin_reportar: {
+    general: "json_arrtractossinreportar.json"
+  },
+  tractos_dobles_sin_reportar: {
+    general: "json_arrcajasd.json"
+  },
 };
