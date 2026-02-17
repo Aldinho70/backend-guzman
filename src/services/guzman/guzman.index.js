@@ -7,7 +7,10 @@ export const mapGuzman = (data) => {
 
         switch (_group.group_name) {
             case 'TRACTOS DASHBOARD':
-                mapGuzmanTractos(_group)
+                mapGuzmanTractos( _group )
+                break;
+            case 'GUZMAN IRAPUATO CAJAS':
+                mapGuzmanCajas( _group )
                 break;
 
             default:
@@ -61,6 +64,26 @@ const mapGuzmanTractos = (data) => {
 
     sendJson( mapStateGroups(status) )
 
+}
+
+const mapGuzmanCajas = ( data ) => {
+
+    const status = {
+        cajas_sin_reportar:[]
+    }
+
+    data.units.forEach(_u => {
+         
+         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+         
+         if( _u.status_connection == 'offline'){
+            status.cajas_sin_reportar.push( _u )
+        }
+    });
+
+    sendJson( mapStateGroups(status) )
 }
 
 const sendJson = async (data) => {

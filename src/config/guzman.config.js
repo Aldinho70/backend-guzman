@@ -26,5 +26,8 @@ export const fileMap = {
   },
   sin_estatus: {
     general: "json_arrsinstatus.json"
-  }
+  },
+  cajas_sin_reportar: {
+    general: "json_arrcajas.json"
+  },
 };
