@@ -81,8 +81,8 @@ const sendJson = async (data) => {
 
       const result = await JsonInterceptor.sendJson(
         filename,
-        // groups[groupKey] // aquí sí enviamos la data real
-        [] // aquí sí enviamos la data real
+        groups[groupKey] // aquí sí enviamos la data real
+        // [] // aquí sí enviamos la data real
       );
 
       console.table(result);
