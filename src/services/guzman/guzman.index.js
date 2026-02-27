@@ -7,19 +7,18 @@ export const mapGuzman = (data) => {
 
         switch (_group.group_name) {
             case 'TRACTOS DASHBOARD':
-                mapGuzmanTractos( _group )
-                mapGuzmanTractosSinReportar( _group )
+                    mapGuzmanTractos( _group )
+                    mapGuzmanTractosSinReportar( _group )
                 break;
             case 'GUZMAN IRAPUATO CAJAS':
-                mapGuzmanCajas( _group )
+                    mapGuzmanCajas( _group )
                 break;
             case 'GUZMAN CAJAS DOBLES':
-                mapGuzmanCajasDobles( _group )
+                    mapGuzmanCajasDobles( _group )
                 break;
             case 'DEV GUZMAN TRACTOS DOBLES':
-                mapGuzmanTractosDobles( _group )
+                    mapGuzmanTractosDobles( _group )
                 break;
-
             default:
 
                 break;
@@ -29,7 +28,6 @@ export const mapGuzman = (data) => {
 }
 
 const mapGuzmanTractos = (data) => {
-
     const status = {
         vacio: [],
         cargado: [],
@@ -39,21 +37,14 @@ const mapGuzmanTractos = (data) => {
     };
 
     data.units.forEach(_u => {
-
         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-
+        
         /**
          * Procesamiento de campos personalizados
          */
             const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO']);
-            
-            if( _u.Unidad == '350 - I' ){
-                console.log(_u.Unidad);
-                console.log(_u.fields_customers);
-            }
-
             const fld_status =flds?.['1STATUSDASHBOARD'] ?.replaceAll(' ', '_') ?.toLowerCase() ?? 'sin_estatus';
             _u.status = fld_status;
 
@@ -64,6 +55,8 @@ const mapGuzmanTractos = (data) => {
          * Procesamiento de sensores
          */
             const sens = extractSens(_u.sens, ['IGNICION']);
+            console.log(sens);
+            
             if (sens['IGNICION']) {
                 const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
                 // console.log( sens_ignition );
@@ -83,25 +76,37 @@ const mapGuzmanTractos = (data) => {
 }
 
 const mapGuzmanCajas = ( data ) => {
-
     const status = {
-        cajas_sin_reportar:[]
+        cajas_sin_reportar:[],
+        falla_temperatura: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        /**
+         * Procesamiento de sensores
+         */
+            const sens = extractSens(_u.sens, ['Temperatura']);
+            if (sens['TEMPERATURA']) {
+                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+                _u.Temperatura = sens_temperature;
+            }
          
         delete _u.fields_customers;
         delete _u.sens;
 
-         if( _u.status_connection == 'offline'){
+        if( _u.status_connection == 'offline'){
             status.cajas_sin_reportar.push( _u )
+        }
+
+        if( _u.Temperatura != 'N/A' ){
+            status.falla_temperatura.push( _u )
         }
     });
 
+    
     sendJson( mapStateGroups(status) )
 }
 

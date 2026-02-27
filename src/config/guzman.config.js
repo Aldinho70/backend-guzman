@@ -30,6 +30,9 @@ export const fileMap = {
   cajas_sin_reportar: {
     general: "json_arrcajas.json"
   },
+  falla_temperatura: {
+    general: "json_arrfallatemp.json"
+  },
   cajas_dobles_sin_reportar: {
     general: "json_arrdoblessinreportar.json"
   },

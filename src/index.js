@@ -24,7 +24,7 @@ const relouder = async () => {
     const groups_with_units =
       await WialonService.loadGroupsWithUnits(GROUP_FILTER);
 
-    mapGuzman(groups_with_units);
+    mapGuzman( groups_with_units );
 
   } catch (err) {
     console.error(err);
