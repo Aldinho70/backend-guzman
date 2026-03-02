@@ -55,8 +55,6 @@ const mapGuzmanTractos = (data) => {
          * Procesamiento de sensores
          */
             const sens = extractSens(_u.sens, ['IGNICION']);
-            console.log(sens);
-            
             if (sens['IGNICION']) {
                 const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
                 // console.log( sens_ignition );
@@ -101,7 +99,7 @@ const mapGuzmanCajas = ( data ) => {
             status.cajas_sin_reportar.push( _u )
         }
 
-        if( _u.Temperatura != 'N/A' ){
+        if( _u.Temperatura == 'N/A' || _u.Temperatura >= 200 || _u.Temperatura == undefined  ){
             status.falla_temperatura.push( _u )
         }
     });
