@@ -5,7 +5,7 @@ import { mapGuzman } from "./services/guzman/guzman.index.js";
 document.addEventListener("DOMContentLoaded", async () => {
   const initWialon = async () => {
   try {
-    await WialonService.login(TOKEN_WIALON);
+    await WialonService.login( TOKEN_WIALON );
 
     const groups_with_units =
       await WialonService.loadGroupsWithUnits(GROUP_FILTER);

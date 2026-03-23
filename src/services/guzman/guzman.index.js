@@ -44,12 +44,13 @@ const mapGuzmanTractos = (data) => {
         /**
          * Procesamiento de campos personalizados
          */
-            const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO']);
+            const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO', '4 CAJA']);
             const fld_status =flds?.['1STATUSDASHBOARD'] ?.replaceAll(' ', '_') ?.toLowerCase() ?? 'sin_estatus';
             _u.status = fld_status;
 
-            _u.Origen = flds?.['1 ORIGEN'] ?? '';
-            _u.detenidos = flds?.['2 DESTINO'] ?? '';
+            _u.Origen = flds?.['1 ORIGEN'] ?? 'Sin origen';
+            _u.Destino = flds?.['2 DESTINO'] ?? 'Sin destino';
+            _u.Caja = flds?.['4 CAJA'] ?? 'Sin caja';
 
         /**
          * Procesamiento de sensores
@@ -91,7 +92,7 @@ const mapGuzmanCajas = ( data ) => {
                 const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
                 _u.Temperatura = sens_temperature;
             }
-         
+
         delete _u.fields_customers;
         delete _u.sens;
 

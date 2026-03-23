@@ -1,4 +1,3 @@
-
 const WialonService = (() => {
   let session = null;
   let initialized = false;
@@ -72,6 +71,8 @@ const WialonService = (() => {
               lat: p?.y,
               lon: p?.x,
               speed: p?.s,
+              velocidad: p?.s,
+              timestamp: p?.t,
               fields_customers: flds,
             };
           });
@@ -131,6 +132,12 @@ const WialonService = (() => {
                   Longitud: p?.x,
                   speed: p?.s,
                   Velocidad: p?.s,
+                  timestamp: p?.t,
+                  Ultimo_mensaje: formatTimestamp(lastMessage.t),
+                  Diferencia_tiempo: formatTimestamp(lastMessage.t),
+                  Caja_Reportando: formatTimestamp(lastMessage.t),
+                  Destino: 'Sin destino',
+                  Origen: 'Sin origen',
                   Voltaje: 0,
                   Online: 0,
                   fields_customers: flds,
@@ -166,6 +173,21 @@ const WialonService = (() => {
     }
     return result
   }
+
+  formatTimestamp = (ts) => {
+    if (!ts) return 'fecha_invalida';
+
+    const date = new Date(ts * 1000);
+
+    return date.toLocaleString('es-MX', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
 
   return {
     login,
