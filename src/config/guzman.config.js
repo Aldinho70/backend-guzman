@@ -42,4 +42,7 @@ export const fileMap = {
   tractos_dobles_sin_reportar: {
     general: "json_arrcajasd.json"
   },
+  widetech:{
+    general: "widetech.json"
+  }
 };
