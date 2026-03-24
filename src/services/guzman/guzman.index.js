@@ -10,15 +10,6 @@ export const mapGuzman = (data) => {
                     mapGuzmanTractos( _group )
                     mapGuzmanTractosSinReportar( _group )
                 break;
-            case 'GUZMAN IRAPUATO CAJAS':
-                    mapGuzmanCajas( _group )
-                break;
-            case 'GUZMAN CAJAS DOBLES':
-                    mapGuzmanCajasDobles( _group )
-                break;
-            case 'DEV GUZMAN TRACTOS DOBLES':
-                    mapGuzmanTractosDobles( _group )
-                break;
             default:
 
                 break;
@@ -71,112 +62,7 @@ const mapGuzmanTractos = (data) => {
     });
 
     sendJson( mapStateGroups(status) )
-    sendJson( "widetech.json", [{"widetech": "widetech"}] )
 
-}
-
-const mapGuzmanCajas = ( data ) => {
-    const status = {
-        cajas_sin_reportar:[],
-        falla_temperatura: []
-    }
-
-    data.units.forEach(_u => {
-        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-        /**
-         * Procesamiento de sensores
-         */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
-
-        delete _u.fields_customers;
-        delete _u.sens;
-
-        if( _u.status_connection == 'offline'){
-            status.cajas_sin_reportar.push( _u )
-        }
-
-        if( _u.Temperatura == 'N/A' || _u.Temperatura >= 200 || _u.Temperatura == undefined  ){
-            status.falla_temperatura.push( _u )
-        }
-    });
-
-    
-    sendJson( mapStateGroups(status) )
-}
-
-const mapGuzmanCajasDobles = ( data ) => {
-
-    const status = {
-        cajas_dobles_sin_reportar:[]
-    }
-
-    data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-         if( _u.status_connection == 'offline'){
-            delete _u.fields_customers;
-            delete _u.sens;
-
-            status.cajas_dobles_sin_reportar.push( _u )
-        }
-    });
-
-    sendJson( mapStateGroups(status) )
-}
-
-const mapGuzmanTractosSinReportar = ( data ) => {
-
-    const status = {
-        tractos_sin_reportar:[]
-    }
-
-    data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-         if( _u.status_connection == 'offline'){
-            delete _u.fields_customers;
-            delete _u.sens;
-
-            status.tractos_sin_reportar.push( _u )
-        }
-    });
-
-    sendJson( mapStateGroups(status) )
-}
-
-const mapGuzmanTractosDobles = ( data ) => {
-
-    const status = {
-        tractos_dobles_sin_reportar:[]
-    }
-
-    data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-         if( _u.status_connection == 'offline'){
-            delete _u.fields_customers;
-            delete _u.sens;
-            
-            status.tractos_dobles_sin_reportar.push( _u )
-        }
-    });
-
-    sendJson( mapStateGroups(status) )
 }
 
 const sendJson = async (data) => {

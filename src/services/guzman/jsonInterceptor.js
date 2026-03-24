@@ -1,5 +1,5 @@
 class JsonInterceptor {
-  static INTERCEPTOR_URL = "http://ws4cjdg.com/OPERACION_GUZMAN/save_json.php";
+  static INTERCEPTOR_URL = "http://ws4cjdg.com/micro_service_widetech/save_json.php";
   static INTERCEPTOR_KEY = "GUZMAN_SECURE_KEY_2025";
 
   static async sendJson(filename, data) {

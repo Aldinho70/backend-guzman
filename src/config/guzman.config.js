@@ -8,41 +8,9 @@ export const GROUP_FILTER = ["TRACTOS DASHBOARD", "GUZMAN IRAPUATO CAJAS", "DEV 
 
 export const fileMap = {
   vacio: {
-    detenidos: "json_arrvaciosdet.json",
-    general: "json_arrvacios.json",
-    movimiento: "json_arrvaciosmov.json"
+    detenidos: "logs.json",
+    general: "logs.json",
+    movimiento: "logs.json"
   },
-  cargado: {
-    detenidos: "json_arrcargadosdet.json",
-    general: "json_arrcargados.json",
-    movimiento: "json_arrcargadosmov.json",
-    sin_reportar: "json_arrcargadosdead.json"
-  },
-  espera_de_carga: {
-    general: "json_arrcargando.json"
-  },
-  espera_descarga: {
-    general: "json_arrdescargando.json"
-  },
-  sin_estatus: {
-    general: "json_arrsinstatus.json"
-  },
-  cajas_sin_reportar: {
-    general: "json_arrcajas.json"
-  },
-  falla_temperatura: {
-    general: "json_arrfallatemp.json"
-  },
-  cajas_dobles_sin_reportar: {
-    general: "json_arrdoblessinreportar.json"
-  },
-  tractos_sin_reportar: {
-    general: "json_arrtractossinreportar.json"
-  },
-  tractos_dobles_sin_reportar: {
-    general: "json_arrcajasd.json"
-  },
-  widetech:{
-    general: "widetech.json"
-  }
+  
 };
