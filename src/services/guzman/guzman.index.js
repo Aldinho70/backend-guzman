@@ -35,7 +35,7 @@ const mapGuzmanTractos = (data) => {
         espera_descarga: [],
         sin_estatus: []
     };
-
+    
     data.units.forEach(_u => {
         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
@@ -180,6 +180,8 @@ const mapGuzmanTractosDobles = ( data ) => {
 }
 
 const sendJson = async (data) => {
+    console.log(data);
+    
 
   for (const statusKey in data) {
     if (!Object.hasOwn(data, statusKey)) continue;
