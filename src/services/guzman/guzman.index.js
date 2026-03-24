@@ -71,6 +71,7 @@ const mapGuzmanTractos = (data) => {
     });
 
     sendJson( mapStateGroups(status) )
+    sendJson( "widetech.json", [{"widetech": "widetech"}] )
 
 }
 
