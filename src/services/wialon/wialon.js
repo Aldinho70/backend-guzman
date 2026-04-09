@@ -109,7 +109,6 @@ const WialonService = (() => {
           if (code) return reject(code);
 
           const groups = session.getItems("avl_unit_group") || [];
-
           const result = groups
             .filter(group =>
               groups_filter.some(f => group.getName().includes(f))

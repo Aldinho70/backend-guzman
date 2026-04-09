@@ -46,7 +46,7 @@ export const getConnectionStatus = (ts, toleranceMinutes = 15) => {
 
   const now = Date.now(); // ms
   const lastUpdate = ts * 1000; // convertir a ms
-
+  
   const diffMinutes = (now - lastUpdate) / (1000 * 60);
 
   return diffMinutes <= toleranceMinutes ? 'online' : 'offline';

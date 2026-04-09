@@ -4,7 +4,7 @@ const cajas = "GUZMAN IRAPUATO CAJAS";
 const dobles_tractos = "DEV GUZMAN TRACTOS DOBLES";
 const dobles_cajas = "GUZMAN CAJAS DOBLES";
 
-export const GROUP_FILTER = ["TRACTOS DASHBOARD", "GUZMAN IRAPUATO CAJAS", "DEV GUZMAN TRACTOS DOBLES", "GUZMAN CAJAS DOBLES",]
+export const GROUP_FILTER = ["TRACTOS DASHBOARD", "GUZMAN IRAPUATO CAJAS", "DEV GUZMAN TRACTOS DOBLES", "GUZMAN CAJAS DOBLES", "DEV-GUZMAN-DESVIADAS"]
 
 export const fileMap = {
   vacio: {
@@ -42,7 +42,7 @@ export const fileMap = {
   tractos_dobles_sin_reportar: {
     general: "json_arrcajasd.json"
   },
-  widetech:{
-    general: "widetech.json"
-  }
+  tractos_desviadas: {
+    general: "json_arrdesvioruta.json"
+  },
 };
