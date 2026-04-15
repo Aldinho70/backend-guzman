@@ -9,21 +9,21 @@ export const mapGuzman = (data) => {
                     mapGuzmanTractos( _group )
                     mapGuzmanTractosSinReportar( _group )
                 break;
-            case 'GUZMAN IRAPUATO CAJAS':
-                    mapGuzmanCajas( _group )
-                break;
-            case 'GUZMAN CAJAS DOBLES':
-                    mapGuzmanCajasDobles( _group )
-                break;
-            case 'DEV GUZMAN TRACTOS DOBLES':
-                    mapGuzmanTractosDobles( _group )
-                break;
-            case 'DEV-GUZMAN-DESVIADAS':
-                mapGuzmanDesviados(_group)
-                break;
-            default:
+            // case 'GUZMAN IRAPUATO CAJAS':
+            //         mapGuzmanCajas( _group )
+            //     break;
+            // case 'GUZMAN CAJAS DOBLES':
+            //         mapGuzmanCajasDobles( _group )
+            //     break;
+            // case 'DEV GUZMAN TRACTOS DOBLES':
+            //         mapGuzmanTractosDobles( _group )
+            //     break;
+            // case 'DEV-GUZMAN-DESVIADAS':
+            //     mapGuzmanDesviados(_group)
+            //     break;
+            // default:
 
-                break;
+            //     break;
         }
 
     });
@@ -40,8 +40,6 @@ const mapGuzmanTractos = (data) => {
 
     data.units.forEach(_u => {
         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
         
         /**
          * Procesamiento de campos personalizados
@@ -63,6 +61,10 @@ const mapGuzmanTractos = (data) => {
                 // console.log( sens_ignition );
                 _u.sens_ignition = sens_ignition;
             }
+        
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        console.log( _u.sens_ignition, _u.status_connection );
         
         const key_status = status[fld_status] ? fld_status : 'sin_estatus';
 

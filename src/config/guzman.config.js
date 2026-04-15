@@ -34,13 +34,13 @@ export const fileMap = {
     general: "json_arrfallatemp.json"
   },
   cajas_dobles_sin_reportar: {
-    general: "json_arrdoblessinreportar.json"
+    general: "json_arrcajasd.json"
   },
   tractos_sin_reportar: {
     general: "json_arrtractossinreportar.json"
   },
   tractos_dobles_sin_reportar: {
-    general: "json_arrcajasd.json"
+    general: "json_arrdoblessinreportar.json"
   },
   tractos_desviadas: {
     general: "json_arrdesvioruta.json"
