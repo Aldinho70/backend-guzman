@@ -62,9 +62,9 @@ const mapGuzmanTractos = (data) => {
                 _u.sens_ignition = sens_ignition;
             }
         
-        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        const tolerancia_tiempo = ( _u.sens_ignition === 1 ) ? 15 : 31;   
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-        console.log( _u.sens_ignition, _u.status_connection );
         
         const key_status = status[fld_status] ? fld_status : 'sin_estatus';
 
@@ -168,11 +168,23 @@ const mapGuzmanTractosDobles = ( data ) => {
 
     data.units.forEach(_u => {
          
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        /**
+         * Procesamiento de sensores
+         */
+            const sens = extractSens(_u.sens, ['IGNICION']);
+            if (sens['IGNICION']) {
+                const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
+                // console.log( sens_ignition );
+                _u.sens_ignition = sens_ignition;
+            }
+            
+            const tolerancia_tiempo = ( _u.sens_ignition === 1) ? 15 : 31;
+            _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
+            _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+            _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
          
-         if( _u.status_connection == 'offline'){
+        if( _u.status_connection == 'offline'){
             delete _u.fields_customers;
             delete _u.sens;
             
