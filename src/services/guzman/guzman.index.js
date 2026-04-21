@@ -9,21 +9,27 @@ export const mapGuzman = (data) => {
                     mapGuzmanTractos( _group )
                     mapGuzmanTractosSinReportar( _group )
                 break;
-            // case 'GUZMAN IRAPUATO CAJAS':
-            //         mapGuzmanCajas( _group )
-            //     break;
-            // case 'GUZMAN CAJAS DOBLES':
-            //         mapGuzmanCajasDobles( _group )
-            //     break;
-            // case 'DEV GUZMAN TRACTOS DOBLES':
-            //         mapGuzmanTractosDobles( _group )
-            //     break;
-            // case 'DEV-GUZMAN-DESVIADAS':
-            //     mapGuzmanDesviados(_group)
-            //     break;
-            // default:
+            case 'GUZMAN IRAPUATO CAJAS':
+                    mapGuzmanCajas( _group )
+                break;
+            case 'GUZMAN REFRIGERADO':
+                    mapGuzmanRefrigerados( _group )
+                break;
+            case 'GUZMAN SECO':
+                    mapGuzmanSecos(_group)
+                break;
+            case 'GUZMAN CAJAS DOBLES':
+                    mapGuzmanCajasDobles( _group )
+                break;
+            case 'DEV GUZMAN TRACTOS DOBLES':
+                    mapGuzmanTractosDobles( _group )
+                break;
+            case 'DEV-GUZMAN-DESVIADAS':
+                mapGuzmanDesviados(_group)
+                break;
+            default:
 
-            //     break;
+                break;
         }
 
     });
@@ -104,7 +110,7 @@ const mapGuzmanCajas = ( data ) => {
         if( _u.status_connection == 'offline'){
             status.cajas_sin_reportar.push( _u )
         }
-
+        
         if( _u.Temperatura == 'N/A' || _u.Temperatura >= 200 || _u.Temperatura == undefined  ){
             status.falla_temperatura.push( _u )
         }
@@ -161,6 +167,8 @@ const mapGuzmanTractosSinReportar = ( data ) => {
 }
 
 const mapGuzmanTractosDobles = ( data ) => {
+    console.log(data);
+    
 
     const status = {
         tractos_dobles_sin_reportar:[]
@@ -216,29 +224,90 @@ const mapGuzmanDesviados = ( data ) => {
     sendJson( mapStateGroups(status) )
 }
 
-const sendJson = async (data) => {
+const mapGuzmanRefrigerados = ( data ) => {
 
-  for (const statusKey in data) {
-    if (!Object.hasOwn(data, statusKey)) continue;
-
-    const groups = data[statusKey];
-    const statusConfig = fileMap[statusKey];
-
-    if (!statusConfig) continue;
-
-    for (const groupKey in groups) {
-      if (!Object.hasOwn(groups, groupKey)) continue;
-
-      const filename = statusConfig[groupKey];
-      if (!filename) continue;
-
-      const result = await JsonInterceptor.sendJson(
-        filename,
-        groups[groupKey] // aquí sí enviamos la data real
-        // [] // aquí sí enviamos la data real
-      );
-
-      console.log(result);
+    const status = {
+        tractos_refrigerados:[]
     }
-  }
+
+    data.units.forEach(_u => {
+         
+         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+         /**
+         * Procesamiento de sensores
+         */
+            const sens = extractSens(_u.sens, ['Temperatura']);
+            if (sens['TEMPERATURA']) {
+                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+                _u.Temperatura = sens_temperature;
+            }
+
+         
+            delete _u.fields_customers;
+            delete _u.sens;
+            
+            status.tractos_refrigerados.push( _u )
+    });
+
+    sendJson( mapStateGroups(status) )
+}
+
+const mapGuzmanSecos = ( data ) => {
+
+    const status = {
+        tractos_secos:[]
+    }
+
+    data.units.forEach(_u => {
+         
+         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+         /**
+         * Procesamiento de sensores
+         */
+            const sens = extractSens(_u.sens, ['Temperatura']);
+            if (sens['TEMPERATURA']) {
+                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+                _u.Temperatura = sens_temperature;
+            }
+
+         
+            delete _u.fields_customers;
+            delete _u.sens;
+            
+            status.tractos_secos.push( _u )
+    });
+
+    sendJson( mapStateGroups(status) )
+}
+
+const sendJson = async (data) => {
+    for (const statusKey in data) {
+        if (!Object.hasOwn(data, statusKey)) continue;
+
+        const groups = data[statusKey];
+        const statusConfig = fileMap[statusKey];
+
+        if (!statusConfig) continue;
+
+        for (const groupKey in groups) {
+        if (!Object.hasOwn(groups, groupKey)) continue;
+
+        const filename = statusConfig[groupKey];
+        if (!filename) continue;
+
+        const result = await JsonInterceptor.sendJson(
+            filename,
+            groups[groupKey] // aquí sí enviamos la data real
+            // [] // aquí sí enviamos la data real
+        );
+
+        console.log(result);
+        }
+    }
 };

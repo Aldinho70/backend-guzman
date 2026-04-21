@@ -28,6 +28,7 @@ class JsonInterceptor {
       );
 
       return {
+        // data: jsonContent,
         file: filename,
         http_code: response.status,
         raw_reply: response.data
