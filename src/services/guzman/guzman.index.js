@@ -9,6 +9,9 @@ export const mapGuzman = (data) => {
                     mapGuzmanTractos( _group )
                     mapGuzmanTractosSinReportar( _group )
                 break;
+            case 'GUZ REFRI VARIACION':
+                    mapGuzmanVariacionTemperatura( _group )
+                break;
             case 'GUZMAN IRAPUATO CAJAS':
                     mapGuzmanCajas( _group )
                 break;
@@ -281,6 +284,37 @@ const mapGuzmanSecos = ( data ) => {
             delete _u.sens;
             
             status.tractos_secos.push( _u )
+    });
+
+    sendJson( mapStateGroups(status) )
+}
+
+const mapGuzmanVariacionTemperatura = ( data ) => {
+
+    const status = {
+        variacion_temperatura:[]
+    }
+
+    data.units.forEach(_u => {
+         
+         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+         /**
+         * Procesamiento de sensores
+         */
+            const sens = extractSens(_u.sens, ['Temperatura']);
+            if (sens['TEMPERATURA']) {
+                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+                _u.Temperatura = sens_temperature;
+            }
+
+         
+            delete _u.fields_customers;
+            delete _u.sens;
+            
+            status.variacion_temperatura.push( _u )
     });
 
     sendJson( mapStateGroups(status) )
