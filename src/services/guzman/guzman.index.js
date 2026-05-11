@@ -1,5 +1,6 @@
 import { fileMap } from "../../config/guzman.config.js";
 import { formatTimestamp } from "../../utils/utils.js";
+import { mapRefrigeradoSecoCajas } from "../../helpers/status_temp.js";
 import { extractCustomFields, extractSens, getConnectionStatus, mapStateGroups } from "../wialon/utils/wialon.utils.js";
 
 export const mapGuzman = (data) => {
@@ -47,19 +48,34 @@ const mapGuzmanTractos = (data) => {
         sin_estatus: []
     };
 
+    const units_temp = []
+
     data.units.forEach(_u => {
-        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
         
         /**
-         * Procesamiento de campos personalizados
+         * Procesamiento de datos para status de carga
          */
-            const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO', '4 CAJA']);
+            const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO', '4 CAJA', '4 ESTADO', '05 CAJA1', '05 CAJA2']);
             const fld_status =flds?.['1STATUSDASHBOARD'] ?.replaceAll(' ', '_') ?.toLowerCase() ?? 'sin_estatus';
             _u.status = fld_status;
 
             _u.Origen = flds?.['1 ORIGEN'] ?? 'Sin origen';
             _u.Destino = flds?.['2 DESTINO'] ?? 'Sin destino';
             _u.Caja = flds?.['4 CAJA'] ?? 'Sin caja';
+        //--------------------------------------------------------
+
+        /**
+         * Procesamiento de datos para cajas refrigeradas o secas 
+        */    
+            if (flds?.['4 ESTADO'] !== undefined && flds?.['4 ESTADO'] != 0){
+                units_temp.push( {
+                    unidad: _u.Unidad,
+                    caja: flds?.['05 CAJA1'],
+                    caja_doble: flds?.['05 CAJA2'], 
+                    status: flds?.['4 ESTADO']} 
+                )
+            }
+        //--------------------------------------------------------
 
         /**
          * Procesamiento de sensores
@@ -70,12 +86,18 @@ const mapGuzmanTractos = (data) => {
                 // console.log( sens_ignition );
                 _u.sens_ignition = sens_ignition;
             }
-        
-        const tolerancia_tiempo = ( _u.sens_ignition === 1 ) ? 15 : 31;   
-        _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
-        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        //--------------------------------------------------------
+
+        /**
+         * Procesamiento de datos para status de conexion
+         */
+            const tolerancia_tiempo = ( _u.sens_ignition === 1 ) ? 15 : 31;   
+            _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
+            _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        //--------------------------------------------------------
         
         const key_status = status[fld_status] ? fld_status : 'sin_estatus';
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
 
         delete _u.fields_customers;
         delete _u.sens;
@@ -83,6 +105,7 @@ const mapGuzmanTractos = (data) => {
         status[key_status].push(_u);
     });
 
+    mapRefrigeradoSecoCajas( units_temp )
     sendJson( mapStateGroups(status) )
     sendJson( "widetech.json", [{"widetech": "widetech"}] )
 
@@ -170,9 +193,6 @@ const mapGuzmanTractosSinReportar = ( data ) => {
 }
 
 const mapGuzmanTractosDobles = ( data ) => {
-    console.log(data);
-    
-
     const status = {
         tractos_dobles_sin_reportar:[]
     }
@@ -227,16 +247,15 @@ const mapGuzmanDesviados = ( data ) => {
     sendJson( mapStateGroups(status) )
 }
 
-const mapGuzmanRefrigerados = ( data ) => {
-
+export const mapGuzmanRefrigerados = ( data ) => {
     const status = {
         tractos_refrigerados:[]
     }
 
     data.units.forEach(_u => {
          
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage?.t);
+         _u.status_connection = getConnectionStatus(_u.lastMessage?.t)
          _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
          /**
@@ -248,7 +267,6 @@ const mapGuzmanRefrigerados = ( data ) => {
                 _u.Temperatura = sens_temperature;
             }
 
-         
             delete _u.fields_customers;
             delete _u.sens;
             
@@ -258,7 +276,7 @@ const mapGuzmanRefrigerados = ( data ) => {
     sendJson( mapStateGroups(status) )
 }
 
-const mapGuzmanSecos = ( data ) => {
+export const mapGuzmanSecos = ( data ) => {
 
     const status = {
         tractos_secos:[]
@@ -279,7 +297,8 @@ const mapGuzmanSecos = ( data ) => {
                 _u.Temperatura = sens_temperature;
             }
 
-         
+            // console.log( _u.fields_customers )
+
             delete _u.fields_customers;
             delete _u.sens;
             

@@ -82,3 +82,4 @@ export const mapStateGroups = (groups) => {
 
     return result;
 };
+
