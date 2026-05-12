@@ -12,3 +12,14 @@ export const formatTimestamp = (ts) => {
     second: '2-digit'
   });
 };
+
+
+export const ordenarStatusPorFecha = (status) => {
+  const result = {};
+
+  Object.keys(status).forEach(key => {
+    result[key] = [...status[key]].sort((a, b) => b.timestamp - a.timestamp);
+  });
+
+  return result;
+};

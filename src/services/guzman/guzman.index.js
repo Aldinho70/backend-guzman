@@ -1,6 +1,6 @@
 import { fileMap } from "../../config/guzman.config.js";
-import { formatTimestamp } from "../../utils/utils.js";
 import { mapRefrigeradoSecoCajas } from "../../helpers/status_temp.js";
+import { formatTimestamp, ordenarStatusPorFecha } from "../../utils/utils.js";
 import { extractCustomFields, extractSens, getConnectionStatus, mapStateGroups } from "../wialon/utils/wialon.utils.js";
 
 export const mapGuzman = (data) => {
@@ -106,8 +106,8 @@ const mapGuzmanTractos = (data) => {
     });
 
     mapRefrigeradoSecoCajas( units_temp )
-    sendJson( mapStateGroups(status) )
-    sendJson( "widetech.json", [{"widetech": "widetech"}] )
+
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 
 }
 
@@ -143,7 +143,7 @@ const mapGuzmanCajas = ( data ) => {
     });
 
     
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const mapGuzmanCajasDobles = ( data ) => {
@@ -166,7 +166,7 @@ const mapGuzmanCajasDobles = ( data ) => {
         }
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const mapGuzmanTractosSinReportar = ( data ) => {
@@ -189,7 +189,7 @@ const mapGuzmanTractosSinReportar = ( data ) => {
         }
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const mapGuzmanTractosDobles = ( data ) => {
@@ -223,7 +223,7 @@ const mapGuzmanTractosDobles = ( data ) => {
         }
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const mapGuzmanDesviados = ( data ) => {
@@ -244,7 +244,7 @@ const mapGuzmanDesviados = ( data ) => {
             status.tractos_desviadas.push( _u )
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 export const mapGuzmanRefrigerados = ( data ) => {
@@ -273,7 +273,7 @@ export const mapGuzmanRefrigerados = ( data ) => {
             status.tractos_refrigerados.push( _u )
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 export const mapGuzmanSecos = ( data ) => {
@@ -305,7 +305,7 @@ export const mapGuzmanSecos = ( data ) => {
             status.tractos_secos.push( _u )
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const mapGuzmanVariacionTemperatura = ( data ) => {
@@ -336,7 +336,7 @@ const mapGuzmanVariacionTemperatura = ( data ) => {
             status.variacion_temperatura.push( _u )
     });
 
-    sendJson( mapStateGroups(status) )
+    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
 const sendJson = async (data) => {
