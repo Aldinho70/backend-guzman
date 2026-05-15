@@ -18,11 +18,18 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
 
     const groups_with_units = await WialonService.loadGroupsWithUnits(groupNames);
     const array_cajas = groups_with_units.flatMap(g => g?.units || []);
+    console.log(units);
+    
 
     const result = units
         .map(unit => {
             const unitCaja = normalize(unit?.caja);
             const unitNum = extractNumber(unitCaja);
+
+            console.log(
+                `%cTracto: ${unit.Unidad}\nEstatus: ${unit.status}\nCaja: ${unit.caja} ${unit.caja_doble}`,
+                'color: #00bcd4; font-weight: bold;'
+            );
 
             let match = array_cajas.find(d =>
                 normalize(d?.name) === unitCaja
@@ -32,7 +39,19 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
                 match = array_cajas.find(d =>
                     extractNumber(d?.name) === unitNum
                 );
+                
+                if(match){
+                    match.tracto = unit.name;
+                    match.is_caja = true;
+                }
+
             }
+            else{
+                match = unit
+            }
+
+        console.log(match);
+        
 
             if (unit.status === 'REFRI' && match) {
                 array_refrigerado.push(match);
@@ -44,6 +63,8 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
         })
         .filter(Boolean); 
 
+        console.log( result );
+        
     // console.log(array_refrigerado);
     // console.log(array_seco);
     mapGuzmanRefrigerados( {units: array_refrigerado} )

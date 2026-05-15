@@ -70,6 +70,7 @@ const mapGuzmanTractos = (data) => {
             if (flds?.['4 ESTADO'] !== undefined && flds?.['4 ESTADO'] != 0){
                 units_temp.push( {
                     unidad: _u.Unidad,
+                    ..._u,
                     caja: flds?.['05 CAJA1'],
                     caja_doble: flds?.['05 CAJA2'], 
                     status: flds?.['4 ESTADO']} 
@@ -360,7 +361,7 @@ const sendJson = async (data) => {
             // [] // aquí sí enviamos la data real
         );
 
-        console.log(result);
+        // console.log(result);
         }
     }
 };
