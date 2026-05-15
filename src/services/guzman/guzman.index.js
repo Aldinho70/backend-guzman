@@ -129,6 +129,7 @@ const mapGuzmanCajas = ( data ) => {
             if (sens['TEMPERATURA']) {
                 const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
                 _u.Temperatura = sens_temperature;
+                _u.temp = sens_temperature || 'N/A';
             }
 
         delete _u.fields_customers;
@@ -262,11 +263,11 @@ export const mapGuzmanRefrigerados = ( data ) => {
          /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
+            // const sens = extractSens(_u.sens, ['Temperatura']);
+            // if (sens['TEMPERATURA']) {
+            //     const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            //     _u.Temperatura = sens_temperature;
+            // }
 
             delete _u.fields_customers;
             delete _u.sens;
@@ -292,11 +293,11 @@ export const mapGuzmanSecos = ( data ) => {
          /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
+            // const sens = extractSens(_u.sens, ['Temperatura']);
+            // if (sens['TEMPERATURA']) {
+            //     const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            //     _u.Temperatura = sens_temperature;
+            // }
 
             // console.log( _u.fields_customers )
 
@@ -309,7 +310,7 @@ export const mapGuzmanSecos = ( data ) => {
     sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
 }
 
-const mapGuzmanVariacionTemperatura = ( data ) => {
+export const mapGuzmanVariacionTemperatura = ( data ) => {
 
     const status = {
         variacion_temperatura:[]
@@ -324,11 +325,11 @@ const mapGuzmanVariacionTemperatura = ( data ) => {
          /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
+            // const sens = extractSens(_u.sens, ['Temperatura']);
+            // if (sens['TEMPERATURA']) {
+            //     const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            //     _u.Temperatura = sens_temperature;
+            // }
 
          
             delete _u.fields_customers;
@@ -361,7 +362,7 @@ const sendJson = async (data) => {
             // [] // aquí sí enviamos la data real
         );
 
-        // console.log(result);
+        console.log(result);
         }
     }
 };
