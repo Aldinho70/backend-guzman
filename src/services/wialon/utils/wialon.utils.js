@@ -41,6 +41,14 @@ export function extractSens ( sens, sensNames = [] ) {
   return result;
 }
 
+export function extractSensByArray ( data ) {
+  // const array_sens
+  data.forEach( _data => {
+    // console.log(_data);
+    
+  } )
+}
+
 export const getConnectionStatus = (ts, toleranceMinutes = 15) => {
   if (!ts) return 'offline';
 

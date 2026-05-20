@@ -1,3 +1,4 @@
+
 const WialonService = (() => {
   let session = null;
   let initialized = false;
@@ -188,11 +189,170 @@ const WialonService = (() => {
     });
   };
 
+  async function getLatestMessages(unitId, dateFrom = null, dateTo = null) {
+
+    return new Promise((resolve, reject) => {
+
+      const ml = session.getMessagesLoader();
+
+      let from;
+      let to;
+
+      // =========================
+      // DEFAULT RANGE
+      // =========================
+      if (!dateFrom || !dateTo) {
+
+        const range = lastHourActually();
+
+        from = range.from;
+        to = range.to;
+
+      } else {
+
+        from = Math.floor(
+          new Date(dateFrom).getTime() / 1000
+        );
+
+        to = Math.floor(
+          new Date(dateTo).getTime() / 1000
+        );
+      }
+
+      ml.loadInterval(
+        unitId,
+        from,
+        to,
+        0,
+        0,
+        100,
+
+        (code, data) => {
+
+          if (code) {
+            return reject(
+              wialon.core.Errors.getErrorText(code)
+            );
+          }
+
+          ml.getMessages(
+            0,
+            data.count - 1,
+
+            (code2, messages) => {
+
+              if (code2) {
+                return reject(
+                  wialon.core.Errors.getErrorText(code2)
+                );
+              }
+
+              resolve(messages);
+            }
+          );
+        }
+      );
+    });
+  }
+
+  async function getSensorHistory( unitId, sensorId, dateFrom = null, dateTo = null) {
+
+    // =========================
+    // Obtener unidad
+    // =========================
+    const unit = session.getItem(unitId);
+
+    if (!unit) {
+      return
+      // throw new Error("Unidad no encontrada");
+    }
+
+    // =========================
+    // Obtener sensor
+    // =========================
+    const sensor = unit.getSensor(sensorId);
+
+    if (!sensor) {
+      return 
+      // throw new Error("Sensor no encontrado");
+    }
+
+    // =========================
+    // Obtener mensajes
+    // =========================
+    const messages = await getLatestMessages(
+      unitId,
+      dateFrom,
+      dateTo
+    );
+
+    // =========================
+    // Procesar histórico
+    // =========================
+    const history = messages.map(msg => {
+
+      let value = unit.calculateSensorValue(
+        sensor,
+        msg
+      );
+
+      if (value == -348201.3876) {
+        value = null;
+      }
+
+      return {
+        timestamp: msg.t,
+
+        date: formatTimestamp(msg.t),
+
+        value,
+
+        raw: msg.p
+      };
+    });
+
+    return history.filter(h => h.value !== null);
+  }
+
+  function lastHourActually() {
+
+    const now = new Date();
+
+    // =========================
+    // FROM
+    // =========================
+    const from = new Date(now);
+
+    from.setMinutes(0);
+    from.setSeconds(0);
+    from.setMilliseconds(0);
+
+    // =========================
+    // TO
+    // =========================
+    const to = new Date(now);
+
+    to.setHours(23);
+    to.setMinutes(59);
+    to.setSeconds(59);
+    to.setMilliseconds(999);
+
+    return {
+      from: Math.floor(from.getTime() / 1000),
+      to: Math.floor(to.getTime() / 1000),
+
+      from_date: from,
+      to_date: to
+    };
+  }
+
   return {
     login,
     logout,
     loadUnits,
     loadGroupsWithUnits,
     getValueSensor,
+    getLatestMessages,
+    getSensorHistory,
   };
 })();

@@ -37,5 +37,4 @@ await initWialon();
 // Repetir cada 50 segundos
 setInterval(relouder, 50 * 1000);
 
-
 });
