@@ -361,7 +361,7 @@ const sendJson = async (data) => {
             // [] // aquí sí enviamos la data real
         );
 
-        // console.log(result);
+        console.log(result);
         }
     }
 };

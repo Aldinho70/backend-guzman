@@ -10,123 +10,57 @@ const extractNumber = (str = '') => {
 
 export const mapRefrigeradoSecoCajas = async (units = []) => {
 
+    // console.log(units);
+    
     const groupNames = [
         'GUZMAN CAJAS DOBLES',
         'GUZMAN IRAPUATO CAJAS',
     ];
 
-    const array_refrigerado = [];
     const array_seco = [];
+    const array_refrigerado = [];
     const variacion_temperatura = [];
 
-    // =========================
-    // CAJAS
-    // =========================
-    const groups_with_units =
-        await WialonService.loadGroupsWithUnits(
-            groupNames
-        );
+    const groups_with_units = await WialonService.loadGroupsWithUnits( groupNames );
+    const array_cajas = groups_with_units.flatMap( g => g?.units || [] );
 
-    const array_cajas =
-        groups_with_units.flatMap(
-            g => g?.units || []
-        );
-
-    // =========================
-    // MAPEO PRINCIPAL
-    // =========================
     const result = await Promise.all(
 
         units.map(async (unit) => {
-
             try {
+                const unitCaja = normalize(unit?.caja);
 
-                const unitCaja =
-                    normalize(unit?.caja);
+                const unitNum = extractNumber(unitCaja);
 
-                const unitNum =
-                    extractNumber(unitCaja);
+                const sens_temp = extractSens( unit?.sens || {}, ['Temperatura'] );
 
-                // =====================================
-                // SENSOR TEMPERATURA
-                // =====================================
-                const sens_temp =
-                    extractSens(
-                        unit?.sens || {},
-                        ['Temperatura']
-                    );
-
-                // =====================================
-                // MATCH EXACTO
-                // =====================================
                 let match = array_cajas.find(d =>
                     normalize(d?.name) === unitCaja
                 );
 
-                // =====================================
-                // MATCH POR NUMERO
-                // =====================================
                 if (!match && unitNum) {
-
                     match = array_cajas.find(d =>
                         extractNumber(d?.name) === unitNum
                     );
+                }else{
+                    match = unit;
                 }
 
-                // =====================================
-                // SIN MATCH
-                // =====================================
                 if (!match) {
-                    return null;
+                    match = unit;
                 }
 
-                // =====================================
-                // DATA EXTRA
-                // =====================================
                 match.tracto = unit?.name;
                 match.is_caja = true;
 
-                // =====================================
-                // HISTORICO TEMPERATURA
-                // =====================================
-                if (
-                    sens_temp &&
-                    sens_temp['TEMPERATURA']
-                ) {
-
+                if ( sens_temp && sens_temp['TEMPERATURA'] ) {
                     try {
+                        const sensorId = Number( sens_temp['TEMPERATURA'] );
+                        const unitId = Number( match.id );
+                        if ( !isNaN(sensorId) && !isNaN(unitId) ) {
+                            const historico_temperatura = await WialonService.getSensorHistory( unitId, sensorId );
 
-                        const sensorId = Number(
-                            sens_temp['TEMPERATURA']
-                        );
-
-                        const unitId = Number(
-                            match.id
-                        );
-
-                        if (
-                            !isNaN(sensorId) &&
-                            !isNaN(unitId)
-                        ) {
-
-                            console.log({
-                                sensorId,
-                                unitId
-                            });
-
-                            const historico_temperatura =
-                                await WialonService.getSensorHistory(
-                                    unitId,
-                                    sensorId
-                                );
-
-                            if (
-                                Array.isArray(
-                                    historico_temperatura
-                                ) &&
-                                historico_temperatura.length
-                            ) {
-
+                            if ( Array.isArray( historico_temperatura ) && historico_temperatura.length ) {
                                 match.historico_temperatura =
                                     historico_temperatura;
                             }
@@ -134,65 +68,42 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
 
                     } catch (err) {
 
-                        console.log(
-                            'Error getSensorHistory:',
-                            err
-                        );
+                        // console.log(
+                        //     'Error getSensorHistory:',
+                        //     err
+                        // );
                     }
                 }
 
-                // =====================================
-                // ARRAYS
-                // =====================================
                 if (unit.status === 'REFRI') {
-
                     array_refrigerado.push(match);
-
                     variacion_temperatura.push(match);
 
-                } else if (
-                    unit.status === 'SECO'
-                ) {
-
+                } else if ( unit.status === 'SECO') {
                     array_seco.push(match);
                 }
 
-                console.log(match);
+                // console.log(match);
 
                 return match;
 
             } catch (err) {
-
                 console.error(
                     'Error mapRefrigeradoSecoCajas:',
                     err
                 );
-
                 return null;
             }
         })
     );
+    
+    const filtered = result.filter(Boolean);
 
-    // =========================
-    // LIMPIAR NULOS
-    // =========================
-    const filtered =
-        result.filter(Boolean);
+    mapVariacionTemperatura( variacion_temperatura );
 
-    // =========================
-    // RENDER
-    // =========================
-    mapVariacionTemperatura(
-        variacion_temperatura
-    );
+    mapGuzmanRefrigerados({ units: array_refrigerado });
 
-    mapGuzmanRefrigerados({
-        units: array_refrigerado
-    });
-
-    mapGuzmanSecos({
-        units: array_seco
-    });
+    mapGuzmanSecos({ units: array_seco });
 
     return filtered;
 };
