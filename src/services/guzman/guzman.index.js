@@ -265,11 +265,12 @@ export const mapGuzmanRefrigerados = ( data ) => {
          * Procesamiento de sensores
          */
             const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
-
+                if (sens['TEMPERATURA']) {
+                    const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+                    _u.Temperatura = sens_temperature;
+                }
+            
+            
             delete _u.fields_customers;
             delete _u.sens;
             
@@ -361,7 +362,7 @@ const sendJson = async (data) => {
             // [] // aquí sí enviamos la data real
         );
 
-        console.log(result);
+        // console.log(result);
         }
     }
 };

@@ -10,11 +10,12 @@ const extractNumber = (str = '') => {
 
 export const mapRefrigeradoSecoCajas = async (units = []) => {
 
-    // console.log(units);
+    console.log(units);
     
     const groupNames = [
         'GUZMAN CAJAS DOBLES',
         'GUZMAN IRAPUATO CAJAS',
+        'GUZMAN CAJAS',
     ];
 
     const array_seco = [];
@@ -42,8 +43,6 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
                     match = array_cajas.find(d =>
                         extractNumber(d?.name) === unitNum
                     );
-                }else{
-                    match = unit;
                 }
 
                 if (!match) {
@@ -67,11 +66,7 @@ export const mapRefrigeradoSecoCajas = async (units = []) => {
                         }
 
                     } catch (err) {
-
-                        // console.log(
-                        //     'Error getSensorHistory:',
-                        //     err
-                        // );
+                        // console.log( 'Error getSensorHistory:', err );
                     }
                 }
 
