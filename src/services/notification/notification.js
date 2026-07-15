@@ -2,7 +2,7 @@ export async function sendNotificationDataBase(notification) {
     console.log( notification );
     
   try {
-    const response = await fetch("https://ws4cjdg.com/JDigitalReportsV2/src/api/routes/notifications/addNotification.php", {
+    const response = await fetch("http://ws4cjdg.com/JDigitalReportsV2/src/api/routes/notifications/addNotification.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
