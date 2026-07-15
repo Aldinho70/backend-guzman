@@ -19,6 +19,7 @@ export async function sendNotificationDataBase(notification) {
     return data;
 
   } catch (error) {
-    console.error("Error al enviar la notificación:", error);
+    console.error("Error al enviar la notificación:");
+    console.error(error);
   }
 }

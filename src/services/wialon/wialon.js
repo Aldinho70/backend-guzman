@@ -415,7 +415,7 @@ const WialonService = (() => {
     function processNotification(event) {
       const data = event.getData(); // get data from event
       const unit = session.getItem(data.unit) || null; // get unit from session
-      const { unit: unit_id, name: notification_name, txt: notification_description, color, lng: longitud, lat: latitud } = data;
+      const { unit: unit_id, name: notification_name, txt: notification_description, color, x: longitud, y: latitud } = data;
 
       if (data.tp && data.tp == "unm") {
         const notification = { unit_id, notification_name, notification_description, color, longitud, latitud };
