@@ -363,19 +363,11 @@ const sendJson = async (data) => {
                 // [] // aquí sí enviamos la data real
             );
 
-<<<<<<< HEAD
-            const { filename, http_code, raw_reply } = result;
-            if (http_code == 200) {
-                console.table(`Se modifico: ${filename}, con ${raw_reply.registros} registros`);
-            } else {
-                console.error(`Error al modificar: ${filename}`);
-=======
             const { file, http_code, raw_reply } = result;
             if (http_code == 200) {
                 console.log(`Se modifico: [${file}],\n con ${raw_reply.registros} registros`);
             } else {
                 console.error(`Error al modificar: ${file}`);
->>>>>>> 433016b (hotfix: correcion de pats y logs)
             }
         }
     }
