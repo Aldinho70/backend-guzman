@@ -2,7 +2,10 @@
 const WialonService = (() => {
   let session = null;
   let initialized = false;
+  let notifications = [];
+  let lastNotifications = []; // solo las últimas notificaciones agregadas
 
+  const MAX_NOTIFICATIONS = 100;
   const HOST = "https://hst-api.wialon.com";
 
   function init() {
@@ -91,25 +94,35 @@ const WialonService = (() => {
       const unitFlags =
         wialon.item.Item.dataFlag.base |
         wialon.item.Unit.dataFlag.sensors |
+        wialon.item.Item.dataFlag.messages |
+        wialon.item.Resource.dataFlag.base |
+        wialon.item.Resource.dataFlag.reports |
         wialon.item.Item.dataFlag.adminFields |
+        wialon.item.Unit.dataFlag.lastMessage |
         wialon.item.Item.dataFlag.customFields |
-        wialon.item.Unit.dataFlag.lastMessage;
-
-      session.loadLibrary("unitSensors");
-      session.loadLibrary("itemCustomFields");
+        wialon.item.Resource.dataFlag.notifications;
 
       const groupFlags =
         wialon.item.Item.dataFlag.base;
 
+      session.loadLibrary("itemIcon");
+      session.loadLibrary("unitSensors");
+      session.loadLibrary("resourceReports");
+      session.loadLibrary("itemCustomFields");
+      session.loadLibrary("resourceNotifications");
+
       session.updateDataFlags(
         [
           { type: "type", data: "avl_unit", flags: unitFlags, mode: 0 },
+          { type: "type", data: "avl_resource", flags: unitFlags, mode: 0 },
           { type: "type", data: "avl_unit_group", flags: groupFlags, mode: 0 },
         ],
         (code) => {
           if (code) return reject(code);
 
+          const resource = session.getItems("avl_resource") || [];
           const groups = session.getItems("avl_unit_group") || [];
+
           const result = groups
             .filter(group =>
               groups_filter.some(f => group.getName().includes(f))
@@ -153,8 +166,7 @@ const WialonService = (() => {
               };
             });
 
-
-
+          getNotificationsByResource(resource, ["DEV-VAR-TEMP"]);
           resolve(result);
         }
       );
@@ -174,7 +186,7 @@ const WialonService = (() => {
     return result
   }
 
-  formatTimestamp = (ts) => {
+  function formatTimestamp(ts) {
     if (!ts) return 'fecha_invalida';
 
     const date = new Date(ts * 1000);
@@ -255,7 +267,7 @@ const WialonService = (() => {
     });
   }
 
-  async function getSensorHistory( unitId, sensorId, dateFrom = null, dateTo = null) {
+  async function getSensorHistory(unitId, sensorId, dateFrom = null, dateTo = null) {
 
     // =========================
     // Obtener unidad
@@ -273,7 +285,7 @@ const WialonService = (() => {
     const sensor = unit.getSensor(sensorId);
 
     if (!sensor) {
-      return 
+      return
       // throw new Error("Sensor no encontrado");
     }
 
@@ -314,6 +326,116 @@ const WialonService = (() => {
     return history.filter(h => h.value !== null);
   }
 
+  // async function getNotificationsByResource(resource, notifications_name_filter = []) {
+
+  //   // function processNotification(event) {
+  //   //   const data = event.getData(); // get data from event
+  //   //   const unit = session.getItem(data.unit) || null; // get unit from session
+  //   //   const { color, name, txt, unit: id_unit, x: lng, y: lat } = data;
+
+  //   //   if (data.tp && data.tp == "unm") {
+  //   //     if (notifications_name_filter.length) {
+  //   //       if (notifications_name_filter.includes(data.name)) {
+  //   //           notifications.push({
+  //   //             id_unit, name, txt, color, lng, lat
+  //   //           });
+  //   //       }
+  //   //     } else {
+  //   //       notifications.push({
+  //   //         id_unit, name, txt, color, lng, lat
+  //   //       });
+  //   //     }
+  //   //   }
+  //   // }
+
+  //   function addNotification(notification) {
+  //     notifications.push(notification);
+
+  //     // Si se pasa del límite, eliminamos las más viejas (del inicio del array)
+  //     if (notifications.length > MAX_NOTIFICATIONS) {
+  //       const excedente = notifications.length - MAX_NOTIFICATIONS;
+  //       notifications.splice(0, excedente); // elimina desde el inicio
+  //     }
+  //   }
+
+  //   function processNotification(event) {
+      
+  //     const data = event.getData(); // get data from event
+  //     const unit = session.getItem(data.unit) || null; // get unit from session
+  //     const { color, name, txt, unit: id_unit, x: lng, y: lat } = data;
+      
+  //     if (data.tp && data.tp == "unm") {
+  //       const nuevasNotificaciones = []; // acumulador temporal de este batch
+        
+  //       if (notifications_name_filter.length) {
+  //         if (notifications_name_filter.includes(data.name)) {
+  //           const notification = { id_unit, name, txt, color, lng, lat };
+
+  //           if( lastNotifications[0]?.id_unit != notification.id_unit){
+  //             addNotification(notification);
+  //             nuevasNotificaciones.push(notification);
+  //           }
+  //         }
+  //       } else {
+  //         const notification = { id_unit, name, txt, color, lng, lat };
+  //         addNotification(notification);
+  //         nuevasNotificaciones.push(notification);
+  //       }
+
+  //       // Reemplazamos por completo lastNotifications con lo nuevo de este evento
+  //       if (nuevasNotificaciones.length) {
+  //         lastNotifications = nuevasNotificaciones;
+  //       }
+        
+  //     }
+  //   }
+
+  //   for (var i = 0; i < resource.length; i++) {
+  //     resource[i].addListener("messageRegistered", processNotification);
+  //   }
+  // }
+
+  async function getNotificationsByResource(resource, notifications_name_filter = []) {
+
+    function addNotification(notification) {
+      notifications.push(notification);
+
+      // Si se pasa del límite, eliminamos las más viejas (del inicio del array)
+      if (notifications.length > MAX_NOTIFICATIONS) {
+        const excedente = notifications.length - MAX_NOTIFICATIONS;
+        notifications.splice(0, excedente); // elimina desde el inicio
+      }
+    }
+
+    function isDuplicate(notification) {
+      // Revisa si alguna notificación del último batch tiene el mismo id_unit
+      return lastNotifications.some(n => n.id_unit === notification.id_unit);
+    }
+
+    function processNotification(event) {
+      const data = event.getData(); // get data from event
+      const unit = session.getItem(data.unit) || null; // get unit from session
+      const { unit: unit_id, name: notification_name, txt: notification_description, color, lng: longitud, lat: latitud } = data;
+
+      if (data.tp && data.tp == "unm") {
+        const notification = { unit_id, notification_name, notification_description, color, longitud, latitud };
+
+        // Filtramos por nombre si aplica
+        const pasaFiltro = notifications_name_filter.length
+          ? notifications_name_filter.includes(data.name)
+          : true;
+
+        if (pasaFiltro && !isDuplicate(notification)) {
+          addNotification(notification);
+          lastNotifications = [notification]; // reemplaza por completo el batch anterior
+        }
+      }
+    }
+
+    for (var i = 0; i < resource.length; i++) {
+      resource[i].addListener("messageRegistered", processNotification);
+    }
+}
   function lastHourActually() {
 
     const now = new Date();
@@ -346,13 +468,22 @@ const WialonService = (() => {
     };
   }
 
+  function getNotifications() {
+    return { notifications, lastNotifications };
+  }
+
+  // function addNotification(notification) {
+  //   notifications.push(notification);
+  // }
+
   return {
     login,
     logout,
     loadUnits,
-    loadGroupsWithUnits,
     getValueSensor,
-    getLatestMessages,
     getSensorHistory,
+    getNotifications,
+    getLatestMessages,
+    loadGroupsWithUnits,
   };
 })();

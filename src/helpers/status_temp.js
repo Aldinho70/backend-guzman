@@ -10,8 +10,6 @@ const extractNumber = (str = '') => {
 
 export const mapRefrigeradoSecoCajas = async (units = []) => {
 
-    console.log(units);
-    
     const groupNames = [
         'GUZMAN CAJAS DOBLES',
         'GUZMAN IRAPUATO CAJAS',
