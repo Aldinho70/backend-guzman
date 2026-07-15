@@ -7,26 +7,26 @@ export const mapGuzman = (data) => {
     data.forEach(_group => {
         switch (_group.group_name) {
             case 'TRACTOS DASHBOARD':
-                    mapGuzmanTractos( _group )
-                    mapGuzmanTractosSinReportar( _group )
+                mapGuzmanTractos(_group)
+                mapGuzmanTractosSinReportar(_group)
                 break;
             case 'GUZ REFRI VARIACION':
-                    mapGuzmanVariacionTemperatura( _group )
+                mapGuzmanVariacionTemperatura(_group)
                 break;
             case 'GUZMAN IRAPUATO CAJAS':
-                    mapGuzmanCajas( _group )
+                mapGuzmanCajas(_group)
                 break;
             case 'GUZMAN REFRIGERADO':
-                    mapGuzmanRefrigerados( _group )
+                mapGuzmanRefrigerados(_group)
                 break;
             case 'GUZMAN SECO':
-                    mapGuzmanSecos(_group)
+                mapGuzmanSecos(_group)
                 break;
             case 'GUZMAN CAJAS DOBLES':
-                    mapGuzmanCajasDobles( _group )
+                mapGuzmanCajasDobles(_group)
                 break;
             case 'DEV GUZMAN TRACTOS DOBLES':
-                    mapGuzmanTractosDobles( _group )
+                mapGuzmanTractosDobles(_group)
                 break;
             case 'DEV-GUZMAN-DESVIADAS':
                 mapGuzmanDesviados(_group)
@@ -51,52 +51,53 @@ const mapGuzmanTractos = (data) => {
     const units_temp = []
 
     data.units.forEach(_u => {
-        
+
         /**
          * Procesamiento de datos para status de carga
          */
-            const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO', '4 CAJA', '4 ESTADO', '05 CAJA1', '05 CAJA2']);
-            const fld_status =flds?.['1STATUSDASHBOARD'] ?.replaceAll(' ', '_') ?.toLowerCase() ?? 'sin_estatus';
-            _u.status = fld_status;
+        const flds = extractCustomFields(_u.fields_customers, ['1STATUSDASHBOARD', '1 ORIGEN', '2 DESTINO', '4 CAJA', '4 ESTADO', '05 CAJA1', '05 CAJA2']);
+        const fld_status = flds?.['1STATUSDASHBOARD']?.replaceAll(' ', '_')?.toLowerCase() ?? 'sin_estatus';
+        _u.status = fld_status;
 
-            _u.Origen = flds?.['1 ORIGEN'] ?? 'Sin origen';
-            _u.Destino = flds?.['2 DESTINO'] ?? 'Sin destino';
-            _u.Caja = flds?.['4 CAJA'] ?? 'Sin caja';
+        _u.Origen = flds?.['1 ORIGEN'] ?? 'Sin origen';
+        _u.Destino = flds?.['2 DESTINO'] ?? 'Sin destino';
+        _u.Caja = flds?.['4 CAJA'] ?? 'Sin caja';
         //--------------------------------------------------------
 
         /**
          * Procesamiento de datos para cajas refrigeradas o secas 
-        */    
-            if (flds?.['4 ESTADO'] !== undefined && flds?.['4 ESTADO'] != 0){
-                units_temp.push( {
-                    unidad: _u.Unidad,
-                    ..._u,
-                    caja: flds?.['05 CAJA1'],
-                    caja_doble: flds?.['05 CAJA2'], 
-                    status: flds?.['4 ESTADO']} 
-                )
+        */
+        if (flds?.['4 ESTADO'] !== undefined && flds?.['4 ESTADO'] != 0) {
+            units_temp.push({
+                unidad: _u.Unidad,
+                ..._u,
+                caja: flds?.['05 CAJA1'],
+                caja_doble: flds?.['05 CAJA2'],
+                status: flds?.['4 ESTADO']
             }
+            )
+        }
         //--------------------------------------------------------
 
         /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['IGNICION']);
-            if (sens['IGNICION']) {
-                const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
-                // console.log( sens_ignition );
-                _u.sens_ignition = sens_ignition;
-            }
+        const sens = extractSens(_u.sens, ['IGNICION']);
+        if (sens['IGNICION']) {
+            const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
+            // console.log( sens_ignition );
+            _u.sens_ignition = sens_ignition;
+        }
         //--------------------------------------------------------
 
         /**
          * Procesamiento de datos para status de conexion
          */
-            const tolerancia_tiempo = ( _u.sens_ignition === 1 ) ? 15 : 31;   
-            _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
-            _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        const tolerancia_tiempo = (_u.sens_ignition === 1) ? 15 : 31;
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
         //--------------------------------------------------------
-        
+
         const key_status = status[fld_status] ? fld_status : 'sin_estatus';
         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
 
@@ -106,15 +107,15 @@ const mapGuzmanTractos = (data) => {
         status[key_status].push(_u);
     });
 
-    mapRefrigeradoSecoCajas( units_temp )
+    mapRefrigeradoSecoCajas(units_temp)
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 
 }
 
-const mapGuzmanCajas = ( data ) => {
+const mapGuzmanCajas = (data) => {
     const status = {
-        cajas_sin_reportar:[],
+        cajas_sin_reportar: [],
         falla_temperatura: []
     }
 
@@ -125,220 +126,220 @@ const mapGuzmanCajas = ( data ) => {
         /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-                _u.temp = sens_temperature || 'N/A';
-            }
+        const sens = extractSens(_u.sens, ['Temperatura']);
+
+        if (sens['TEMPERATURA']) {
+            const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            _u.Temperatura = sens_temperature;
+            _u.temp = sens_temperature || 'N/A';
+        }
 
         delete _u.fields_customers;
         delete _u.sens;
 
-        if( _u.status_connection == 'offline'){
-            status.cajas_sin_reportar.push( _u )
+        if (_u.status_connection == 'offline') {
+            status.cajas_sin_reportar.push(_u)
         }
-        
-        if( _u.Temperatura == 'N/A' || _u.Temperatura >= 200 || _u.Temperatura == undefined  ){
-            status.falla_temperatura.push( _u )
+
+        if (_u.Temperatura == 'N/A' || _u.Temperatura >= 200 || _u.Temperatura == undefined) {
+            status.falla_temperatura.push(_u)
         }
     });
 
-    
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-const mapGuzmanCajasDobles = ( data ) => {
+const mapGuzmanCajasDobles = (data) => {
 
     const status = {
-        cajas_dobles_sin_reportar:[]
+        cajas_dobles_sin_reportar: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t, 30)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-         if( _u.status_connection == 'offline'){
+
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t, 30)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+        if (_u.status_connection == 'offline') {
             delete _u.fields_customers;
             delete _u.sens;
 
-            status.cajas_dobles_sin_reportar.push( _u )
+            status.cajas_dobles_sin_reportar.push(_u)
         }
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-const mapGuzmanTractosSinReportar = ( data ) => {
+const mapGuzmanTractosSinReportar = (data) => {
 
     const status = {
-        tractos_sin_reportar:[]
+        tractos_sin_reportar: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-         if( _u.status_connection == 'offline'){
+
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+        if (_u.status_connection == 'offline') {
             delete _u.fields_customers;
             delete _u.sens;
 
-            status.tractos_sin_reportar.push( _u )
+            status.tractos_sin_reportar.push(_u)
         }
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-const mapGuzmanTractosDobles = ( data ) => {
+const mapGuzmanTractosDobles = (data) => {
     const status = {
-        tractos_dobles_sin_reportar:[]
+        tractos_dobles_sin_reportar: []
     }
 
     data.units.forEach(_u => {
-         
+
         /**
          * Procesamiento de sensores
          */
-            const sens = extractSens(_u.sens, ['IGNICION']);
-            if (sens['IGNICION']) {
-                const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
-                // console.log( sens_ignition );
-                _u.sens_ignition = sens_ignition;
-            }
-            
-            const tolerancia_tiempo = ( _u.sens_ignition === 1) ? 15 : 31;
-            _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
-            _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+        const sens = extractSens(_u.sens, ['IGNICION']);
+        if (sens['IGNICION']) {
+            const sens_ignition = WialonService.getValueSensor(_u.id, sens['IGNICION'])
+            // console.log( sens_ignition );
+            _u.sens_ignition = sens_ignition;
+        }
 
-            _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         
-        if( _u.status_connection == 'offline'){
+        const tolerancia_tiempo = (_u.sens_ignition === 1) ? 15 : 31;
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t, tolerancia_tiempo)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+
+        if (_u.status_connection == 'offline') {
             delete _u.fields_customers;
             delete _u.sens;
-            
-            status.tractos_dobles_sin_reportar.push( _u )
+
+            status.tractos_dobles_sin_reportar.push(_u)
         }
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-const mapGuzmanDesviados = ( data ) => {
+const mapGuzmanDesviados = (data) => {
 
     const status = {
-        tractos_desviadas:[]
+        tractos_desviadas: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
-         
-            delete _u.fields_customers;
-            delete _u.sens;
-            
-            status.tractos_desviadas.push( _u )
+
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+        delete _u.fields_customers;
+        delete _u.sens;
+
+        status.tractos_desviadas.push(_u)
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-export const mapGuzmanRefrigerados = ( data ) => {
+export const mapGuzmanRefrigerados = (data) => {
     const status = {
-        tractos_refrigerados:[]
+        tractos_refrigerados: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage?.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage?.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
-         /**
-         * Procesamiento de sensores
-         */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-                if (sens['TEMPERATURA']) {
-                    const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                    _u.Temperatura = sens_temperature;
-                }
-            
-            
-            delete _u.fields_customers;
-            delete _u.sens;
-            
-            status.tractos_refrigerados.push( _u )
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage?.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage?.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
+
+        /**
+        * Procesamiento de sensores
+        */
+        const sens = extractSens(_u.sens, ['Temperatura']);
+        if (sens['TEMPERATURA']) {
+            const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            _u.Temperatura = sens_temperature;
+        }
+
+
+        delete _u.fields_customers;
+        delete _u.sens;
+
+        status.tractos_refrigerados.push(_u)
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-export const mapGuzmanSecos = ( data ) => {
+export const mapGuzmanSecos = (data) => {
 
     const status = {
-        tractos_secos:[]
+        tractos_secos: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
-         /**
-         * Procesamiento de sensores
-         */
-            const sens = extractSens(_u.sens, ['Temperatura']);
-            if (sens['TEMPERATURA']) {
-                const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-                _u.Temperatura = sens_temperature;
-            }
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
-            delete _u.fields_customers;
-            delete _u.sens;
-            
-            status.tractos_secos.push( _u )
+        /**
+        * Procesamiento de sensores
+        */
+        const sens = extractSens(_u.sens, ['Temperatura']);
+        if (sens['TEMPERATURA']) {
+            const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+            _u.Temperatura = sens_temperature;
+        }
+
+        delete _u.fields_customers;
+        delete _u.sens;
+
+        status.tractos_secos.push(_u)
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
-export const mapGuzmanVariacionTemperatura = ( data ) => {
+export const mapGuzmanVariacionTemperatura = (data) => {
 
     const status = {
-        variacion_temperatura:[]
+        variacion_temperatura: []
     }
 
     data.units.forEach(_u => {
-         
-         _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
-         _u.status_connection = getConnectionStatus(_u.lastMessage.t)
-         _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
-         /**
-         * Procesamiento de sensores
-         */
-            // const sens = extractSens(_u.sens, ['Temperatura']);
-            // if (sens['TEMPERATURA']) {
-            //     const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
-            //     _u.Temperatura = sens_temperature;
-            // }
+        _u["Ultimo reporte"] = formatTimestamp(_u.lastMessage.t);
+        _u.status_connection = getConnectionStatus(_u.lastMessage.t)
+        _u.Online = (_u.status_connection == 'online') ? 1 : 0;
 
-         
-            delete _u.fields_customers;
-            delete _u.sens;
-            
-            status.variacion_temperatura.push( _u )
+        /**
+        * Procesamiento de sensores
+        */
+        // const sens = extractSens(_u.sens, ['Temperatura']);
+        // if (sens['TEMPERATURA']) {
+        //     const sens_temperature = WialonService.getValueSensor(_u.id, sens['TEMPERATURA'])
+        //     _u.Temperatura = sens_temperature;
+        // }
+
+
+        delete _u.fields_customers;
+        delete _u.sens;
+
+        status.variacion_temperatura.push(_u)
     });
 
-    sendJson( mapStateGroups( ordenarStatusPorFecha(status) ) )
+    sendJson(mapStateGroups(ordenarStatusPorFecha(status)))
 }
 
 const sendJson = async (data) => {
@@ -351,18 +352,23 @@ const sendJson = async (data) => {
         if (!statusConfig) continue;
 
         for (const groupKey in groups) {
-        if (!Object.hasOwn(groups, groupKey)) continue;
+            if (!Object.hasOwn(groups, groupKey)) continue;
 
-        const filename = statusConfig[groupKey];
-        if (!filename) continue;
+            const filename = statusConfig[groupKey];
+            if (!filename) continue;
 
-        const result = await JsonInterceptor.sendJson(
-            filename,
-            groups[groupKey] // aquí sí enviamos la data real
-            // [] // aquí sí enviamos la data real
-        );
+            const result = await JsonInterceptor.sendJson(
+                filename,
+                groups[groupKey] // aquí sí enviamos la data real
+                // [] // aquí sí enviamos la data real
+            );
 
-        console.log(result);
+            const { filename, http_code, raw_reply } = result;
+            if (http_code == 200) {
+                console.table(`Se modifico: ${filename}, con ${raw_reply.registros} registros`);
+            } else {
+                console.error(`Error al modificar: ${filename}`);
+            }
         }
     }
 };
