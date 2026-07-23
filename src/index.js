@@ -8,8 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     await WialonService.login( TOKEN_WIALON );
 
-    const groups_with_units =
-      await WialonService.loadGroupsWithUnits(GROUP_FILTER);
+    const groups_with_units = await WialonService.loadGroupsWithUnits(GROUP_FILTER);
     mapGuzman(groups_with_units);
     
   } catch (err) {
@@ -25,9 +24,6 @@ const relouder = async () => {
     mapGuzman( groups_with_units );
 
     const notifications = WialonService.getNotifications();
-    if( notifications.lastNotifications.length ){
-      sendNotificationDataBase( notifications.lastNotifications[0] );
-    }
 
   } catch (err) {
     console.error(err);

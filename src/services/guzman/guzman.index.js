@@ -365,7 +365,7 @@ const sendJson = async (data) => {
 
             const { file, http_code, raw_reply } = result;
             if (http_code == 200) {
-                console.log(`Se modifico: [${file}],\n con ${raw_reply.registros} registros`);
+                // console.log(`Se modifico: [${file}],\n con ${raw_reply.registros} registros`);
             } else {
                 console.error(`Error al modificar: ${file}`);
             }

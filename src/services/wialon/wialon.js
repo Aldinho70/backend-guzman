@@ -1,9 +1,9 @@
-
 const WialonService = (() => {
   let session = null;
   let initialized = false;
   let notifications = [];
-  let lastNotifications = []; // solo las últimas notificaciones agregadas
+  let lastNotifications = [];
+  let lastCount = 0;
 
   const MAX_NOTIFICATIONS = 100;
   const HOST = "https://hst-api.wialon.com";
@@ -326,108 +326,46 @@ const WialonService = (() => {
     return history.filter(h => h.value !== null);
   }
 
-  // async function getNotificationsByResource(resource, notifications_name_filter = []) {
-
-  //   // function processNotification(event) {
-  //   //   const data = event.getData(); // get data from event
-  //   //   const unit = session.getItem(data.unit) || null; // get unit from session
-  //   //   const { color, name, txt, unit: id_unit, x: lng, y: lat } = data;
-
-  //   //   if (data.tp && data.tp == "unm") {
-  //   //     if (notifications_name_filter.length) {
-  //   //       if (notifications_name_filter.includes(data.name)) {
-  //   //           notifications.push({
-  //   //             id_unit, name, txt, color, lng, lat
-  //   //           });
-  //   //       }
-  //   //     } else {
-  //   //       notifications.push({
-  //   //         id_unit, name, txt, color, lng, lat
-  //   //       });
-  //   //     }
-  //   //   }
-  //   // }
-
-  //   function addNotification(notification) {
-  //     notifications.push(notification);
-
-  //     // Si se pasa del límite, eliminamos las más viejas (del inicio del array)
-  //     if (notifications.length > MAX_NOTIFICATIONS) {
-  //       const excedente = notifications.length - MAX_NOTIFICATIONS;
-  //       notifications.splice(0, excedente); // elimina desde el inicio
-  //     }
-  //   }
-
-  //   function processNotification(event) {
-      
-  //     const data = event.getData(); // get data from event
-  //     const unit = session.getItem(data.unit) || null; // get unit from session
-  //     const { color, name, txt, unit: id_unit, x: lng, y: lat } = data;
-      
-  //     if (data.tp && data.tp == "unm") {
-  //       const nuevasNotificaciones = []; // acumulador temporal de este batch
-        
-  //       if (notifications_name_filter.length) {
-  //         if (notifications_name_filter.includes(data.name)) {
-  //           const notification = { id_unit, name, txt, color, lng, lat };
-
-  //           if( lastNotifications[0]?.id_unit != notification.id_unit){
-  //             addNotification(notification);
-  //             nuevasNotificaciones.push(notification);
-  //           }
-  //         }
-  //       } else {
-  //         const notification = { id_unit, name, txt, color, lng, lat };
-  //         addNotification(notification);
-  //         nuevasNotificaciones.push(notification);
-  //       }
-
-  //       // Reemplazamos por completo lastNotifications con lo nuevo de este evento
-  //       if (nuevasNotificaciones.length) {
-  //         lastNotifications = nuevasNotificaciones;
-  //       }
-        
-  //     }
-  //   }
-
-  //   for (var i = 0; i < resource.length; i++) {
-  //     resource[i].addListener("messageRegistered", processNotification);
-  //   }
-  // }
-
   async function getNotificationsByResource(resource, notifications_name_filter = []) {
 
     function addNotification(notification) {
       notifications.push(notification);
 
-      // Si se pasa del límite, eliminamos las más viejas (del inicio del array)
       if (notifications.length > MAX_NOTIFICATIONS) {
         const excedente = notifications.length - MAX_NOTIFICATIONS;
-        notifications.splice(0, excedente); // elimina desde el inicio
+        notifications.splice(0, excedente);
       }
     }
 
     function isDuplicate(notification) {
-      // Revisa si alguna notificación del último batch tiene el mismo id_unit
-      return lastNotifications.some(n => n.id_unit === notification.id_unit);
+      return notifications.some(n =>
+        n.notification_description === notification.notification_description
+      );
+    }
+
+    function updateBuffer() {
+      lastNotifications = notifications.slice(lastCount);
+      lastCount = notifications.length;
     }
 
     function processNotification(event) {
-      const data = event.getData(); // get data from event
-      const unit = session.getItem(data.unit) || null; // get unit from session
+      const data = event.getData();
+      const unit = session.getItem(data.unit) || null;
       const { unit: unit_id, name: notification_name, txt: notification_description, color, x: longitud, y: latitud } = data;
 
       if (data.tp && data.tp == "unm") {
         const notification = { unit_id, notification_name, notification_description, color, longitud, latitud };
 
-        // Filtramos por nombre si aplica
-        const pasaFiltro = notifications_name_filter.length
-          ? notifications_name_filter.includes(data.name)
-          : true;
+        if(notifications_name_filter.includes(data.name)) {
+          if (isDuplicate(notification)) {
 
-        if (pasaFiltro && !isDuplicate(notification)) {
-          addNotification(notification);
-          lastNotifications = [notification]; // reemplaza por completo el batch anterior
+          } else {
+            addNotification(notification);
+            sendNotificationDataBase(notification);
+            // updateBuffer();
+            // lastNotifications = [notification];
+
+          }
         }
       }
     }
@@ -435,7 +373,33 @@ const WialonService = (() => {
     for (var i = 0; i < resource.length; i++) {
       resource[i].addListener("messageRegistered", processNotification);
     }
-}
+  }
+
+  async function sendNotificationDataBase(notification) {
+    try {
+      const response = await fetch("http://ws4cjdg.com/JDigitalReportsV2/src/api/routes/notifications/addNotification.php", {
+        // const response = await fetch("http://localhost:8080/repos/Jornada%20Digital/JornadaDigital.ReportesDeUnidades.com/src/api/routes/notifications/addNotification.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(notification)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Notificación enviada correctamente:", data);
+      return data;
+
+    } catch (error) {
+      console.error("Error al enviar la notificación:");
+      console.error(error);
+    }
+  }
+
   function lastHourActually() {
 
     const now = new Date();
