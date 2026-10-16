@@ -28,9 +28,9 @@ export const mapGuzman = (data) => {
             case 'DEV GUZMAN TRACTOS DOBLES':
                 mapGuzmanTractosDobles(_group)
                 break;
-            case 'DEV-GUZMAN-DESVIADAS':
-                mapGuzmanDesviados(_group)
-                break;
+            // case 'DEV-GUZMAN-DESVIADAS':
+            //     mapGuzmanDesviados(_group)
+            //     break;
             default:
 
                 break;
